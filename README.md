@@ -45,4 +45,11 @@ pip install -r requirement.txt
 
 ## Cách chạy huấn luyện và đánh giá mô hình.
 
-
+## Changelog 15/11/2025
+-Changelogs in  dataloader.py 
+	* Added dataset methods (__len__, __getitem__).
+-Changelogs in trainer.py: 
+	* Split full dataset into three subsets: train, validation, test with ratio respectively 6:2:2.
+	* Immplemented dataloader for each subset (No data collator, for now).
+	* Added dataloader test code.
+	
