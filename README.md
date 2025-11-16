@@ -39,7 +39,7 @@ micromamba activate NAME
 Trong cùng một cái virtual environment, cd vào thư mục dự án và chạy:
 
 ``` bash
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Cách chạy huấn luyện và đánh giá mô hình
