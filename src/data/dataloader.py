@@ -1,6 +1,6 @@
 import torch
-from torch.utils.data import Dataset
-from torchvision import datasets
+from torch.utils.data import Dataset,random_split, ConcatDataset
+from torchvision import datasets, transforms
 import torch.nn.functional as F
 
 class MnistDataset(Dataset):
@@ -42,4 +42,20 @@ class DataCollator():
         batched_labels = torch.stack(labels, dim=0)
         return batched_images, batched_labels
 
-#Check Organize_source_Code.pdf on FIT moodle before write DataCollator.
+def getDataSet(root_dir):
+    transform = transforms.Compose([transforms.ToTensor()])
+    full_train_dataset= MnistDataset(root_dir, True, transform)
+    full_test_dataset= MnistDataset(root_dir, False, transform)
+    full_dataset = ConcatDataset([full_train_dataset, full_test_dataset])
+
+    total_size = len(full_dataset)
+    train_size = int(0.6 * total_size)
+    val_size = int(0.2 * total_size)
+    test_size = total_size - train_size - val_size
+
+    train_dataset, val_dataset, test_dataset = random_split(
+            full_dataset,
+            [train_size, val_size, test_size],
+            generator=torch.Generator().manual_seed(42)
+        )
+    return train_dataset, val_dataset, test_dataset, total_size
