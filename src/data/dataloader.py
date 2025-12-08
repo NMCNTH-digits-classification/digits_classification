@@ -3,11 +3,12 @@ from torch.utils.data import Dataset,random_split, ConcatDataset
 from torchvision import datasets, transforms
 import torch.nn.functional as F
 
+
 class MnistDataset(Dataset):
     
     def __init__(self, root_dir, train, transform):
         self.root_dir = root_dir
-        self.train = train
+        self.train = True
         self.transform = transform
 
         self.mnist_data = datasets.MNIST(
@@ -44,10 +45,7 @@ class DataCollator():
 
 def getDataSet(root_dir):
     transform = transforms.Compose([transforms.ToTensor()])
-    full_train_dataset= MnistDataset(root_dir, True, transform)
-    full_test_dataset= MnistDataset(root_dir, False, transform)
-    full_dataset = ConcatDataset([full_train_dataset, full_test_dataset])
-
+    full_dataset= MnistDataset(root_dir, True, transform)
     total_size = len(full_dataset)
     train_size = int(0.6 * total_size)
     val_size = int(0.2 * total_size)
@@ -59,3 +57,6 @@ def getDataSet(root_dir):
             generator=torch.Generator().manual_seed(42)
         )
     return train_dataset, val_dataset, test_dataset, total_size
+def getDataTest(root_dir):
+    test_data = MnistDataset(root_dir, False, None)
+    return test_data

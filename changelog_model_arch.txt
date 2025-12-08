@@ -1,0 +1,5 @@
+#Date: 8/12/2025
+convLayers:
+-Conv2d(1, 32, kernel_size=3) -> ReLu -> Conv2d(32, 64, kernel_size=3) -> ReLu -> Conv2d(64, 64, kernel_size=3) ->ReLu
+Fully-Connected Layers:
+-Flatten ->Dropout -> Linear(64*22*22, 10) 
