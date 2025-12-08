@@ -33,16 +33,16 @@ class DigitsClassifier(nn.Module):
 
         self.conv_layers = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.ReLu(),
+            nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLu(),
+            nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.fc_layers = nn.Sequential(
             nn.Linear(64*7*7, 128),
-            nn.ReLu(),
+            nn.ReLU(),
             nn.Dropout(0.25),
             nn.Linear(128, num_classes)
         )
