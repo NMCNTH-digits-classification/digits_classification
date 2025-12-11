@@ -70,3 +70,24 @@ class DigitsClassifier(nn.Module):
         x = self.fc2(x)
 
         return x
+    
+class MLP(nn.Module):
+    def __init__(self, num_classes=10):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Flatten(),                   # biến ảnh 2D → vector 1D (784)
+
+            nn.Linear(28*28, 256),          # Layer 1
+            nn.ReLU(),
+
+            nn.Linear(256, 128),            # Layer 2
+            nn.ReLU(),
+
+            nn.Dropout(0.2),                # chống overfitting 
+
+            nn.Linear(128, num_classes)     # Output layer
+        )
+
+    def forward(self, x):
+        return self.model(x)
