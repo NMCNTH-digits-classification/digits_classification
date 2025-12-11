@@ -7,7 +7,6 @@ from PIL import Image
 from torchvision import transforms
 from src.data.dataloader import getDataSet, DataCollator, getDataTest
 from omegaconf import  OmegaConf
-from src.models.model import DigitsClassifier
 import torch.nn as nn
 import torch.optim as optim
 from save_samples import testImage
@@ -52,7 +51,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 loss_fn = nn.CrossEntropyLoss()
 
+# dùng DigitsClassifier thì bật dòng dưới và tắt MLP
+from src.models.model import DigitsClassifier
 model = DigitsClassifier().to(device)  
+
+# dùng MLP thì bật dòng dưới và tắt DigitsClassifier
+# from src.models.model import MLP
+# model= MLP().to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
