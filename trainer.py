@@ -10,6 +10,7 @@ from omegaconf import  OmegaConf
 import torch.nn as nn
 import torch.optim as optim
 from save_samples import testImage
+from torchmetrics.classification import MulticlassPrecision, MulticlassRecall, MulticlassF1Score
 config = OmegaConf.load("./configs/config.yaml")
 collator = DataCollator()
 train_dataset, val_dataset, test_dataset,total_size = getDataSet(config.data.root_dir)
@@ -49,6 +50,13 @@ learning_rate = config.trainer.learning_rate
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
 
+metric_params = {'num_classes': 10, 'average': 'macro'}
+
+precision_metric = MulticlassPrecision(**metric_params).to(device)
+recall_metric = MulticlassRecall(**metric_params).to(device)
+f1_metric = MulticlassF1Score(**metric_params).to(device)
+
+
 loss_fn = nn.CrossEntropyLoss()
 
 # dùng DigitsClassifier thì bật dòng dưới và tắt MLP
@@ -79,6 +87,7 @@ def train() -> None:
     for epoch in range(epochs):
         running_loss = 0.0
         model.train()
+
         for i,(images, labels) in enumerate(loaders['train']):
             images = images.to(device)
             labels = labels.to(device)
@@ -102,6 +111,10 @@ def train() -> None:
         correct = 0
         total = 0
 
+        precision_metric.reset()
+        recall_metric.reset()
+        f1_metric.reset()
+
         total_val_steps = len(loaders['val'])
         print(f"--- Starting Validation for Epoch [{epoch+1}/{epochs}] ---")
         with torch.no_grad():
@@ -115,7 +128,11 @@ def train() -> None:
 
                 _, predicted = torch.max(outputs.data, 1)
                 _, true_labels = torch.max(labels.data, 1)
-            
+
+                precision_metric.update(predicted, true_labels)
+                recall_metric.update(predicted, true_labels)
+                f1_metric.update(predicted, true_labels)
+
                 total += labels.size(0)
                 correct += (predicted == true_labels).sum().item()
 
@@ -123,14 +140,23 @@ def train() -> None:
             if (i + 1) % 100 == 0:
                 print(f"Epoch [{epoch+1}/{epochs}], Val Step [{i+1}/{total_val_steps}], Val Loss: {loss.item():.4f}")
 
+        final_precision = precision_metric.compute()
+        final_recall = recall_metric.compute()
+        final_f1 = f1_metric.compute()
+
+
         avg_val_loss = val_loss / total_val_steps
         accuracy = 100 * correct / total
 
+
         
         writer.add_scalar("Loss/validation", avg_val_loss, epoch)
-        writer.add_scalar("Accuracy/validation", accuracy, epoch)
+        # writer.add_scalar("Accuracy/validation", accuracy, epoch)
+        writer.add_scalar("Metrics/Precision", final_precision.item(), epoch)
+        writer.add_scalar("Metrics/Recall", final_recall.item(), epoch)
+        writer.add_scalar("Metrics/F1", final_f1.item(), epoch)
 
-        print(f"End of Epoch {epoch+1} -> Avg Val Loss: {avg_val_loss:.4f}, Accuracy: {accuracy:.2f}%")
+        print(f"End of Epoch {epoch+1} -> Avg Val Loss: {avg_val_loss:.4f}, F1: {final_f1.item():.4f}, Precision: {final_precision.item():.4f}, Recall: {final_recall.item():.4f}")
         print("--------------------------------------------------")
     torch.save(model.state_dict(), "model.pth")
     writer.close()
@@ -141,6 +167,10 @@ def test()-> None:
     test_loss = 0.0
     correct = 0
     total = 0
+    precision_metric.reset()
+    recall_metric.reset()
+    f1_metric.reset()
+
     model.eval()
     with torch.no_grad():
         for images, labels in loaders['test']:
@@ -154,12 +184,21 @@ def test()-> None:
             _, predicted = torch.max(outputs.data, 1)
             _, true_labels = torch.max(labels.data, 1)
 
+            precision_metric.update(predicted, true_labels)
+            recall_metric.update(predicted, true_labels)
+            f1_metric.update(predicted, true_labels)
+
             total += labels.size(0)
             correct += (predicted==true_labels).sum().item()
     avg_test_loss = test_loss / len(loaders['test'])
     test_acc = 100 * correct/total
 
-    print(f"Test Loss: {avg_test_loss}, Accuaracy: {test_acc}")
+    final_precision = precision_metric.compute()
+    final_recall = recall_metric.compute()
+    final_f1 = f1_metric.compute()
+    
+
+    print(f"Test Loss: {avg_test_loss}, Accuaracy: {test_acc}, F1: {final_f1.item():.4f}, Precision: {final_precision.item():.4f}, Recall: {final_recall.item():.4f}")
             
 test_data = getDataTest(root_dir=config.data.root_dir)
 
