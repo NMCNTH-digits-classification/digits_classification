@@ -152,11 +152,11 @@ def train() -> None:
         
         writer.add_scalar("Loss/validation", avg_val_loss, epoch)
         # writer.add_scalar("Accuracy/validation", accuracy, epoch)
-        writer.add_scalar("Metrics/Precision", final_precision, epoch)
-        writer.add_scalar("Metrics/Recall", final_recall, epoch)
-        writer.add_scalar("Metrics/F1", final_f1, epoch)
+        writer.add_scalar("Metrics/Precision", final_precision.item(), epoch)
+        writer.add_scalar("Metrics/Recall", final_recall.item(), epoch)
+        writer.add_scalar("Metrics/F1", final_f1.item(), epoch)
 
-        print(f"End of Epoch {epoch+1} -> Avg Val Loss: {avg_val_loss:.4f}, F1: {final_f1:.4f}, Precision: {final_precision:.4f}, Recall: {final_recall:.4f}")
+        print(f"End of Epoch {epoch+1} -> Avg Val Loss: {avg_val_loss:.4f}, F1: {final_f1.item():.4f}, Precision: {final_precision.item():.4f}, Recall: {final_recall.item():.4f}")
         print("--------------------------------------------------")
     torch.save(model.state_dict(), "model.pth")
     writer.close()
@@ -198,7 +198,7 @@ def test()-> None:
     final_f1 = f1_metric.compute()
     
 
-    print(f"Test Loss: {avg_test_loss}, Accuaracy: {test_acc}, F1: {final_f1:.4f}, Precision: {final_precision:.4f}, Recall: {final_recall:.4f}")
+    print(f"Test Loss: {avg_test_loss}, Accuaracy: {test_acc}, F1: {final_f1.item():.4f}, Precision: {final_precision.item():.4f}, Recall: {final_recall.item():.4f}")
             
 test_data = getDataTest(root_dir=config.data.root_dir)
 
