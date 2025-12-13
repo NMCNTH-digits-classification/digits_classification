@@ -1,5 +1,7 @@
 torch==2.3.0
 numpy==1.26.4
+gradio
 torchvision
+torchmetrics
 tqdm
 omegaconf
