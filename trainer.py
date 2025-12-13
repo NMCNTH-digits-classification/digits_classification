@@ -1,5 +1,6 @@
 import torch
 #from tqdm import tqdm
+import seaborn as sns 
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -199,7 +200,50 @@ def test()-> None:
     
 
     print(f"Test Loss: {avg_test_loss}, Accuaracy: {test_acc}, F1: {final_f1.item():.4f}, Precision: {final_precision.item():.4f}, Recall: {final_recall.item():.4f}")
-            
+
+def plot_confusion_matrix() -> None:
+    print("<--- Plot Confusion Matrix (TEST SET) --->")
+
+    model.eval()
+    all_preds = []
+    all_true = []
+
+    with torch.no_grad():
+        for images, labels in loaders['test']:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs = model(images)
+            preds = torch.argmax(outputs, dim=1)
+            true_labels = torch.argmax(labels, dim=1)
+
+            all_preds.append(preds)
+            all_true.append(true_labels)
+
+    all_preds = torch.cat(all_preds)
+    all_true = torch.cat(all_true)
+    # Confusion Matrix (10 classes)
+    cm = torch.zeros(10, 10, dtype=torch.int64)
+
+    for t, p in zip(all_true, all_preds):
+        cm[t, p] += 1
+
+    print("Confusion Matrix:")
+    print(cm)
+
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(
+        cm.numpy(),
+        annot=True,
+        fmt='d',
+        cmap='Blues'
+    )
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
+    plt.title("Confusion Matrix - Digit Classification")
+    plt.show()
+
+
 test_data = getDataTest(root_dir=config.data.root_dir)
 
 def run_test() -> None:
@@ -224,10 +268,11 @@ def run_test() -> None:
     plt.tight_layout()
     plt.show()
 if __name__ == '__main__':
-    checkDataLoader()
-    train()
-    test()
-    #run_test()
+    # checkDataLoader()
+    # train()
+    # test()
+    # plot_confusion_matrix()
+    run_test()
     try:
         image, labels = next(iter(loaders['train']))
         print("\n---TEST DATLOADER---") #Data Loader test
